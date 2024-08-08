@@ -10,8 +10,20 @@ export class ProductService {
     private productRepository: Repository<Product>,
   ) {}
 
-  findAll(): Promise<Product[]> {
-    return this.productRepository.find();
+  async findAll(searchTerm?: string, maxPrice?: number): Promise<Product[]> {
+    const query = this.productRepository.createQueryBuilder('product');
+
+    if (searchTerm) {
+      query.andWhere('product.name LIKE :searchTerm', {
+        searchTerm: `%${searchTerm}%`,
+      });
+    }
+
+    if (maxPrice) {
+      query.andWhere('product.price <= :maxPrice', { maxPrice });
+    }
+
+    return query.getMany();
   }
 
   findOne(id: number): Promise<Product> {
